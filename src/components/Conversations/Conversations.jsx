@@ -1,61 +1,36 @@
 import React, {useEffect, useState} from 'react'
 import ConversationItem from './ConversationItem'
-
-import { colors } from '../../../constants'
 import { View } from 'react-native'
 import {collection, onSnapshot, orderBy, query} from "firebase/firestore";
-import {db, getListUsers} from "../../utils/firebase";
-import {useAuth} from "../../useAuth";
-import firebase from "firebase/compat";
-// import firebase from "firebase/compat";
-
-
-export const conversations = [
-	{
-		image:
-			'https://www.exibartstreet.com/wp-content/uploads/avatars/2465/5e0de52aeee8b-bpfull.jpg',
-		name: 'Arman',
-		text: 'The unseen of spending three',
-		time: '09:11',
-		userId: 'C6uVHtPIODfHnPu7LI2CEuhTFnc2',
-	},
-	// {
-	// 	image: 'https://legamart.com/avatars/Bruce.jpg',
-	// 	name: 'Afasin',
-	// 	text: 'Hi! How are you?',
-	// 	time: '09:11',
-	// 	userId: '1OGEhuFfoqRNWf3zYHAaajESht52',
-	// },
-	// {
-	// 	image:
-	// 		'https://sammyplaysdirty.com/wp-content/uploads/2017/06/user-avatar-pic3.jpg',
-	// 	name: 'Adele',
-	// 	text: 'Hello bro',
-	// 	time: '09:11',
-	// 	userId: 'w2efqwef2w3rt',
-	// },
-	// {
-	// 	image:
-	// 		'https://images.unsplash.com/photo-1628157588553-5eeea00af15c?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGF2YXRhcnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
-	// 	name: 'Amar',
-	// 	text: 'The unseen of spending three',
-	// 	time: '09:11',
-	// 	userId: 'w2efqwef2w3rt',
-	// },
-]
+import {db} from "../../utils/firebase";
 
 const Conversations = () => {
 	const [lastMessage, setLastMessage] = useState('');
 	const [lastMessageTime, setLastMessageTime] = useState('');
+	const [usersList, setUsersList] = useState(null);
+
 
 	const newConverse = [
 		{
-			image:
-				'https://www.exibartstreet.com/wp-content/uploads/avatars/2465/5e0de52aeee8b-bpfull.jpg',
-			name: 'Arman',
+			image: usersList ? usersList[0].photoURL : 'asd',
+			name: usersList ? usersList[0].displayName : 'asd',
 			text: `${lastMessage}`,
 			time: `${lastMessageTime}`,
-			userId: 'C6uVHtPIODfHnPu7LI2CEuhTFnc2',
+			userId: usersList ? usersList[0].userID : 'asd',
+		},
+		{
+			image: usersList ? usersList[1].photoURL : 'asd',
+			name: usersList ? usersList[1].displayName : 'asd',
+			text: `${lastMessage}`,
+			time: `${lastMessageTime}`,
+			userId: usersList ? usersList[1].userID : 'asd',
+		},
+		{
+			image: usersList ? usersList[2].photoURL : 'asd',
+			name: usersList ? usersList[2].displayName : 'asd',
+			text: `${lastMessage}`,
+			time: `${lastMessageTime}`,
+			userId: usersList ? usersList[2].userID : 'asd',
 		},
 	]
 
@@ -69,16 +44,16 @@ const Conversations = () => {
 							id: doc.id,
 							...doc.data(),
 						}));
-					const currentDate = new Date(messages[messages.length - 1].timestamp.seconds * 1000 + 3600000);
-					const firstSubstr = currentDate.toLocaleDateString().split('/')
-					const secondSubstr = currentDate.toLocaleTimeString().split(':')
-					setLastMessageTime(`${firstSubstr[1]}.${firstSubstr[0]} - ${secondSubstr[0]}:${secondSubstr[1]}`)
-					setLastMessage(messages[messages.length - 1].text);
+					if (messages.length > 0 && messages[messages.length - 1].timestamp) {
+						const currentDate = new Date(messages[messages.length - 1].timestamp.seconds * 1000 + 3600000);
+						const firstSubstr = currentDate.toLocaleDateString().split('/')
+						const secondSubstr = currentDate.toLocaleTimeString().split(':')
+						setLastMessageTime(`${firstSubstr[1]}.${firstSubstr[0]} - ${secondSubstr[0]}:${secondSubstr[1]}`)
+						setLastMessage(messages[messages.length - 1].text);
+					}
 				}
 			),
-		[]
 	)
-	const {user} = useAuth()
 
 	useEffect(() =>
 		onSnapshot(
@@ -88,28 +63,20 @@ const Conversations = () => {
 					snapshot.docs.map(user => ({
 						...user.data(),
 					}));
-				console.log(users);
-				console.log(user);
+				setUsersList(users);
 			}
 		), [])
 
-	useEffect(() => {
-		console.log(getListUsers())
-	}, [])
-
 	return (
-		<View
+		usersList ? <View
 			style={{
-				backgroundColor: colors.DARK,
-				borderRadius: 25,
-				padding: 20,
-				marginHorizontal: 20,
+				display: 'flex',
 			}}
 		>
 			{newConverse.map(conversation => (
 				<ConversationItem key={conversation.name} conversation={conversation} />
 			))}
-		</View>
+		</View> : null
 	)
 }
 

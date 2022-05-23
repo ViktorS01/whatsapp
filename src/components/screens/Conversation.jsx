@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
 	View,
-	Text,
 	ScrollView,
 	TextInput,
 	TouchableOpacity,
@@ -19,7 +18,7 @@ import {
 	query,
 	orderBy,
 } from 'firebase/firestore'
-import {db, updatePhoto} from '../../utils/firebase'
+import {db} from '../../utils/firebase'
 import { useAuth } from '../../useAuth'
 
 const Conversation = () => {
@@ -36,6 +35,7 @@ const Conversation = () => {
 			await addDoc(collection(db, 'messages'), {
 				timestamp: serverTimestamp(),
 				userId: user.uid,
+				to: userId,
 				text: message,
 			})
 		} catch (error) {
@@ -50,22 +50,17 @@ const Conversation = () => {
 			onSnapshot(
 				query(collection(db, 'messages'), orderBy('timestamp', 'asc')),
 				snapshot => {
-					setMessages(
+					const messages =
 						snapshot.docs.map(doc => ({
 							id: doc.id,
 							...doc.data(),
 						}))
-					)
+					const newMessage = messages.filter((item) => (item.to === user.uid && item.userId === userId) || (item.to === userId && item.userId === user.uid))
+					setMessages(newMessage)
 				}
 			),
 		[]
 	)
-
-	useEffect(() => {
-		console.log('Пытаюсь обновить фото!')
-		updatePhoto().then(() => console.log('Ура, получилось!')).catch((err) => console.log(err));
-		console.log('Обновил фото')
-	}, [])
 
 	return (
 		<Layout>

@@ -7,7 +7,6 @@ import React, {
 } from 'react'
 import { onAuthStateChanged } from '@firebase/auth'
 import {auth, db, login, logout} from './utils/firebase'
-import { conversations } from './components/Conversations/Conversations'
 import {collection, onSnapshot, query} from "firebase/firestore";
 
 const AuthContext = createContext({})
@@ -16,6 +15,7 @@ export const AuthProvider = ({ children }) => {
 	const [user, setUser] = useState(null)
 	const [isLoadingInitial, setIsLoadingInitial] = useState(true)
 	const [isLoading, setIsLoading] = useState(false)
+	const [userAvatar, setUserAvatar] = useState(null)
 
 	const loginHandler = async (email, password) => {
 		setIsLoading(true)
@@ -39,6 +39,20 @@ export const AuthProvider = ({ children }) => {
 		}
 	}
 
+	useEffect(() =>
+		onSnapshot(
+			query(collection(db, 'users')),
+			snapshot => {
+				const users =
+					snapshot.docs.map(user => ({
+						...user.data(),
+					}));
+				if (user){
+					setUserAvatar(users.find((item) => item.userID === user.uid).photoURL);
+				}
+			}
+		))
+
 	useEffect(
 		() =>
 			onAuthStateChanged(auth, user => {
@@ -46,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 					setUser(
 						{
 						...user,
-						avatar: conversations.find(c => c.userId === 'C6uVHtPIODfHnPu7LI2CEuhTFnc2').image,
+						avatar: userAvatar,
 					}
 					)
 				} else {
@@ -56,7 +70,7 @@ export const AuthProvider = ({ children }) => {
 				setIsLoadingInitial(false)
 			}),
 
-		[]
+		[userAvatar]
 	)
 
 	const values = useMemo(

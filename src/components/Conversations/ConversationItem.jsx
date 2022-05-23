@@ -1,17 +1,8 @@
 import React from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-
-import { styles } from '../../../constants'
+import {colors, styles} from '../../../constants'
 import { useAuth } from '../../useAuth'
-
-const messages = [
-	{
-		photoURL:
-			'https://www.exibartstreet.com/wp-content/uploads/avatars/2465/5e0de52aeee8b-bpfull.jpg',
-		text: 'The unseen of spending',
-	},
-]
 
 const ConversationItem = ({ conversation }) => {
 	const navigation = useNavigation()
@@ -30,6 +21,11 @@ const ConversationItem = ({ conversation }) => {
 			style={{
 				flexDirection: 'row',
 				alignItems: 'center',
+				marginBottom: 15,
+				backgroundColor: colors.DARK,
+				borderRadius: 25,
+				padding: 20,
+				marginHorizontal: 20,
 			}}
 		>
 			<Image
@@ -44,7 +40,7 @@ const ConversationItem = ({ conversation }) => {
 					<Text style={{ color: '#5F5F5F' }}>{conversation.time}</Text>
 				</View>
 				<View>
-					<Text style={{ color: '#686868' }}>{conversation.text}</Text>
+					<Text style={{ color: '#686868' }}>{conversation.text ? conversation.text : 'Вы не общались с этим пользователем!'}</Text>
 				</View>
 			</View>
 		</TouchableOpacity>

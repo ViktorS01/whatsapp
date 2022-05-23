@@ -1,6 +1,6 @@
 import { getFirestore } from '@firebase/firestore'
 import { initializeApp } from 'firebase/app'
-import { getAuth, signOut, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { getAuth, signOut, signInWithEmailAndPassword } from 'firebase/auth'
 
 const firebaseConfig = {
 	apiKey: "AIzaSyDgmOCAlamwEsiysT_EjSrxaYubW5EwYJU",
@@ -20,12 +20,12 @@ export const login = (email, password) =>
 
 export const logout = () => signOut(auth)
 
-const update = {
-	photoURL: 'https://my-cdn.com/assets/user/123.png',
-};
-
-export const updatePhoto = () => updateProfile(auth.currentUser, update).then(() => console.log('УРААА!'));
-
-export const getListUsers = () => db
+// const update = {
+// 	photoURL: 'https://my-cdn.com/assets/user/123.png',
+// };
+//
+// export const updatePhoto = () => updateProfile(auth.currentUser, update).then(() => console.log('УРААА!'));
+//
+// export const getListUsers = () => db
 
 export const db = getFirestore()
