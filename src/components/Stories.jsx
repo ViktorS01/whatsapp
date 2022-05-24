@@ -1,29 +1,11 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 import { Entypo } from '@expo/vector-icons'
-import { styles } from '../../constants'
-
-const stories = [
-	{
-		image:
-			'https://www.exibartstreet.com/wp-content/uploads/avatars/2465/5e0de52aeee8b-bpfull.jpg',
-		name: 'Arman',
-	},
-	{
-		image: 'https://legamart.com/avatars/Bruce.jpg',
-		name: 'Afasin',
-	},
-	{
-		image:
-			'https://sammyplaysdirty.com/wp-content/uploads/2017/06/user-avatar-pic3.jpg',
-		name: 'Adele',
-	},
-	{
-		image:
-			'https://images.unsplash.com/photo-1628157588553-5eeea00af15c?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGF2YXRhcnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80',
-		name: 'Amar',
-	},
-]
+import {collection, doc, onSnapshot, query, updateDoc} from "@firebase/firestore";
+import {db} from "../utils/firebase";
+import { StoryContainer } from 'react-native-stories-view';
+import * as ImagePicker from "expo-image-picker";
+import {useAuth} from "../useAuth";
 
 const styleStory = {
 	justifyContent: 'center',
@@ -40,43 +22,133 @@ const stylewh = {
 const styleText = { color: '#fff', textAlign: 'center', marginTop: 6 }
 
 const Stories = () => {
-	return (
-		<ScrollView horizontal={true} style={{ marginVertical: 20 }}>
-			<TouchableOpacity style={{ marginRight: 25, marginLeft: 25 }}>
-				<View
-					style={{
-						...styleStory,
-						width: 56,
-						height: 56,
-						borderWidth: 2,
-						borderColor: '#536E68',
-						borderStyle: 'dashed',
-					}}
-				>
-					<Entypo name='plus' size={22} color='#fff' />
-				</View>
-				<Text style={{ ...styleText, marginTop: 8 }}>Add</Text>
-			</TouchableOpacity>
+	const [stories, setStories] = useState([]);
+	const [visibleStory, setVisibleStory] = useState(false);
+	const [newStories, setNewStories] = useState([]);
+	const {user} = useAuth()
+	const [currentStories, setCurrentStories] = useState(
+		null
+	)
 
-			{stories.map(story => (
-				<TouchableOpacity key={story.name} style={{ marginRight: 25 }}>
+	const viewStory = async (id) => {
+		await setCurrentStories(JSON.parse(stories.find(item => item.id === id).stories));
+	}
+
+	const chooseImage = async () => {
+		let result = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.All,
+			allowsEditing: true,
+			aspect: [4, 3],
+			quality: 1,
+		});
+
+		if (!result.cancelled) {
+			await addImageToDB(result.uri);
+			await updateStories(newStories);
+		}
+	}
+
+	const updateStories = (array) => {
+		const newArray = JSON.stringify(array);
+		const userRef = doc(db, "users", user.uid);
+		updateDoc(userRef, {
+			stories: newArray
+		});
+	}
+
+	const addImageToDB = async (uri) => {
+		let oldStories = []
+		await onSnapshot(
+			query(collection(db, 'users')),
+			snapshot => {
+				const users =
+					snapshot.docs.map(user => ({
+						...user.data(),
+					}));
+				oldStories = JSON.parse(users.find(item => item.userID === user.uid).stories);
+				oldStories.push(uri);
+				setNewStories(oldStories);
+			}
+		)
+	}
+
+	useEffect(() =>
+		onSnapshot(
+			query(collection(db, 'users')),
+			snapshot => {
+				const users =
+					snapshot.docs.map(user => ({
+						...user.data(),
+					}));
+				setStories(users.map((item) =>  {
+					return {
+						image: item.photoURL,
+						name: item.displayName,
+						id: item.userID,
+						stories: item.stories,
+					}
+				}))
+			}
+		), [])
+
+	return (
+		visibleStory ? <StoryContainer
+				visible={visibleStory}
+				enableProgress={true}
+				images={currentStories}
+				duration={20}
+				onComplete={() => {
+					setVisibleStory(false);
+					setCurrentStories(null);
+				}}
+				containerStyle={{
+					width: '100%',
+					height: '80%',
+					zIndex: 1000,
+					top: 0,
+				}}
+			/> : <ScrollView horizontal={true} style={{ marginVertical: 20 }}>
+				<TouchableOpacity style={{ marginRight: 25, marginLeft: 25 }} onPress={() => chooseImage()}>
 					<View
 						style={{
 							...styleStory,
+							width: 56,
+							height: 56,
 							borderWidth: 2,
-							borderColor: '#29AB51',
-							borderStyle: 'solid',
+							borderColor: '#536E68',
+							borderStyle: 'dashed',
 						}}
 					>
-						<Image
-							source={{ uri: story.image }}
-							style={{ ...stylewh, borderRadius: 50 }}
-						/>
+						<Entypo name='plus' size={22} color='#fff' />
 					</View>
-					<Text style={styleText}>{story.name}</Text>
+					<Text style={{ ...styleText, marginTop: 8 }}>Add</Text>
 				</TouchableOpacity>
-			))}
-		</ScrollView>
+
+				{stories.map(story => (
+					<TouchableOpacity key={story.name} style={{ marginRight: 25 }} onPress={() => viewStory(story.id).then(() => {
+						if (currentStories && currentStories.length > 0){
+							setVisibleStory(true);
+						} else{
+							setVisibleStory(false);
+						}
+					})}>
+						<View
+							style={{
+								...styleStory,
+								borderWidth: 2,
+								borderColor: '#29AB51',
+								borderStyle: 'solid',
+							}}
+						>
+							<Image
+								source={{ uri: story.image }}
+								style={{ ...stylewh, borderRadius: 50 }}
+							/>
+						</View>
+						<Text style={styleText}>{story.name}</Text>
+					</TouchableOpacity>
+				))}
+			</ScrollView>
 	)
 }
 
