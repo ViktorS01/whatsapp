@@ -1,17 +1,34 @@
 import React, {useEffect, useState} from 'react'
 import { StyleSheet, Text, View, Image, Button } from 'react-native'
 import {useAuth} from "../useAuth";
-import {collection, onSnapshot, query} from "@firebase/firestore";
+import {collection, onSnapshot, query, doc, updateDoc} from "@firebase/firestore";
 import {db} from "../utils/firebase";
-//import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 
 const UploadComponent = () => {
     const {user} = useAuth();
     const [image, setImage] = useState(null);
 
-    const chooseImage = () => {
+    const chooseImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
 
+        if (!result.cancelled) {
+            changeImageToDB(result.uri);
+            setImage(result.uri);
+        }
+    }
+
+    const changeImageToDB = (uri) => {
+        const userRef = doc(db, "users", user.uid);
+        updateDoc(userRef, {
+            photoURL: uri
+        });
     }
 
     useEffect(() => {
