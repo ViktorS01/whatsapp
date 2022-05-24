@@ -1,6 +1,7 @@
 import { getFirestore } from '@firebase/firestore'
 import { initializeApp } from 'firebase/app'
 import { getAuth, signOut, signInWithEmailAndPassword } from 'firebase/auth'
+import {LogBox} from "react-native";
 
 const firebaseConfig = {
 	apiKey: "AIzaSyDgmOCAlamwEsiysT_EjSrxaYubW5EwYJU",
@@ -15,17 +16,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth()
 
+LogBox.ignoreLogs([`Setting a timer for a long period`]);
+
 export const login = (email, password) =>
 	signInWithEmailAndPassword(auth, email, password)
 
 export const logout = () => signOut(auth)
-
-// const update = {
-// 	photoURL: 'https://my-cdn.com/assets/user/123.png',
-// };
-//
-// export const updatePhoto = () => updateProfile(auth.currentUser, update).then(() => console.log('УРААА!'));
-//
-// export const getListUsers = () => db
 
 export const db = getFirestore()

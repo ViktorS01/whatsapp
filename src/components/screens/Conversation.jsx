@@ -17,7 +17,7 @@ import {
 	serverTimestamp,
 	query,
 	orderBy,
-} from 'firebase/firestore'
+} from '@firebase/firestore'
 import {db} from '../../utils/firebase'
 import { useAuth } from '../../useAuth'
 
@@ -31,15 +31,17 @@ const Conversation = () => {
 	} = useRoute()
 
 	const sendMessage = async () => {
-		try {
-			await addDoc(collection(db, 'messages'), {
-				timestamp: serverTimestamp(),
-				userId: user.uid,
-				to: userId,
-				text: message,
-			})
-		} catch (error) {
-			alert(error)
+		if (message){
+			try {
+				await addDoc(collection(db, 'messages'), {
+					timestamp: serverTimestamp(),
+					userId: user.uid,
+					to: userId,
+					text: message,
+				})
+			} catch (error) {
+				alert(error)
+			}
 		}
 
 		setMessage('')
@@ -66,8 +68,8 @@ const Conversation = () => {
 		<Layout>
 			<View style={{ padding: 20 }}>
 				<ScrollView style={{ height: '75%', flexDirection: 'column-reverse' }}>
-					{messages.map(message => (
-						<Message key={message.text} message={message} />
+					{messages.map((message, index) => (
+						<Message key={index} message={message} />
 					))}
 				</ScrollView>
 

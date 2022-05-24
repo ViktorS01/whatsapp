@@ -52,12 +52,12 @@ const Footer = () => {
 				<Entypo name='plus' size={22} color='#fff' />
 			</View>
 			<TouchableOpacity onPress={() => navigation.navigate('ImageUpload')}>
-				<AntDesign name='camerao' size={28} color={checkActive('Camera')} />
+				<AntDesign name='camerao' size={28} color={checkActive('ImageUpload')} />
 			</TouchableOpacity>
 
 
 			<TouchableOpacity onPress={logout}>
-				<AntDesign name='user' size={28} color={checkActive('Profile')} />
+				<AntDesign name='back' size={28} color={checkActive('Profile')} />
 			</TouchableOpacity>
 		</View>
 	)

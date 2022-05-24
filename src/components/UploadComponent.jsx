@@ -1,50 +1,43 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { StyleSheet, Text, View, Image, Button } from 'react-native'
-import { colors } from '../../constants'
 import {useAuth} from "../useAuth";
-// import {getImageUri} from "../utils/getImageUri";
-// import * as ImagePicker from "react-native-image-picker"
+import {collection, onSnapshot, query} from "@firebase/firestore";
+import {db} from "../utils/firebase";
+//import * as ImagePicker from 'expo-image-picker';
 
 
 const UploadComponent = () => {
     const {user} = useAuth();
     const [image, setImage] = useState(null);
 
-    // const chooseImage = () => {
-    //     let options = {
-    //         title: 'Select Avatar',
-    //         cameraType: 'front',
-    //         mediaType: 'photo' ,
-    //         storageOptions: {
-    //             skipBackup: true,
-    //             path: 'images',
-    //         },
-    //     };
-    //     ImagePicker.launchImageLibrary(
-    //         {
-    //             mediaType: 'photo',
-    //             includeBase64: false,
-    //             maxHeight: 200,
-    //             maxWidth: 200,
-    //         },
-    //         (response) => {
-    //             console.log(response);
-    //             this.setState({resourcePath: response});
-    //         },
-    //     )
-    // }
+    const chooseImage = () => {
+
+    }
+
+    useEffect(() => {
+        onSnapshot(
+            query(collection(db, 'users')),
+            snapshot => {
+                const users =
+                    snapshot.docs.map(user => ({
+                        ...user.data(),
+                    }));
+                setImage(users.find(item => item.userID === user.uid).photoURL);
+            }
+        )
+    }, [])
 
     const handleLoadPhotoBtn = async () => {
-        // await chooseImage();
+        await chooseImage();
     }
 
     return (
-        <View>
-            <Text>Ваше фото: </Text>
-            <Image
-                source={{uri: user.photoURL}}
-                style={{width: 200, height: 200}}
-            />
+        <View style={stylesCreated.container}>
+            <Text style={stylesCreated.text}>Ваше фото: </Text>
+            {image && <Image
+                source={{uri: image}}
+                style={{width: 200, height: 200, marginVertical: 25}}
+            /> }
             <Button title={'Сменить фото '} onPress={() => handleLoadPhotoBtn()}/>
         </View>
     )
@@ -58,6 +51,17 @@ const stylesCreated = StyleSheet.create({
         padding: 10,
         backgroundColor: '#fff',
         borderRadius: 10,
+    },
+    text: {
+        color: 'white',
+        textAlign: 'center',
+        justifyContent: 'center',
+        fontSize: 30,
+    },
+    container: {
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: 80,
     },
 })
 

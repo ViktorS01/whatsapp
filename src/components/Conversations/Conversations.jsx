@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import ConversationItem from './ConversationItem'
 import { View } from 'react-native'
-import {collection, onSnapshot, orderBy, query} from "firebase/firestore";
+import {collection, onSnapshot, orderBy, query} from "@firebase/firestore";
 import {db} from "../../utils/firebase";
 import {useAuth} from "../../useAuth";
 
 const Conversations = () => {
 	const [usersList, setUsersList] = useState(null);
 	const [allMessages, setAllMessages] = useState(null);
+	const [conversationList, setConversationList] = useState(null);
 	const { user } = useAuth()
 
 	const showLastMessage = (array, id) => {
@@ -27,29 +28,20 @@ const Conversations = () => {
 		}
 	}
 
-	const newConverse = [
-		{
-			image: usersList ? usersList[0].photoURL : 'asd',
-			name: usersList ? usersList[0].displayName : 'asd',
-			text: allMessages && allMessages.length > 0 ? showLastMessage(allMessages, 0) : '',
-			time: allMessages && allMessages.length > 0 ? showLastTime(allMessages, 0) : '',
-			userId: usersList ? usersList[0].userID : 'asd',
-		},
-		{
-			image: usersList ? usersList[1].photoURL : 'asd',
-			name: usersList ? usersList[1].displayName : 'asd',
-			text: allMessages && allMessages.length > 0 ? showLastMessage(allMessages, 1) : '',
-			time: allMessages && allMessages.length > 0 ? showLastTime(allMessages, 1) : '',
-			userId: usersList ? usersList[1].userID : 'asd',
-		},
-		{
-			image: usersList ? usersList[2].photoURL : 'asd',
-			name: usersList ? usersList[2].displayName : 'asd',
-			text: allMessages && allMessages.length > 0 ? showLastMessage(allMessages, 2) : '',
-			time: allMessages && allMessages.length > 0 ? showLastTime(allMessages, 2) : '',
-			userId: usersList ? usersList[2].userID : 'asd',
-		},
-	]
+	useEffect(() => {
+		if (usersList && usersList.length > 0){
+			const newCon = usersList.map((item, index) => {
+				return {
+					image: item.photoURL,
+					name: item.displayName,
+					text: allMessages && allMessages.length > 0 ? showLastMessage(allMessages, index) : '',
+					time: allMessages && allMessages.length > 0 ? showLastTime(allMessages, index) : '',
+					userId: item.userID,
+				}
+			})
+			setConversationList(newCon);
+		}
+	}, [usersList, allMessages])
 
 	useEffect(
 		() =>
@@ -65,7 +57,7 @@ const Conversations = () => {
 						setAllMessages(messages);
 					}
 				}
-			),
+			), []
 	)
 
 	useEffect(() =>
@@ -81,13 +73,13 @@ const Conversations = () => {
 		), [])
 
 	return (
-		usersList ? <View
+		usersList && conversationList ? <View
 			style={{
 				display: 'flex',
 			}}
 		>
-			{newConverse.map(conversation => (
-				<ConversationItem key={conversation.name} conversation={conversation} />
+			{conversationList.map(conversation => (
+				<ConversationItem key={conversation.userId} conversation={conversation} />
 			))}
 		</View> : null
 	)

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { View, Text, Image } from 'react-native'
 import { colors } from '../../../constants'
 import { useAuth } from '../../useAuth'
-import {collection, onSnapshot, query} from "firebase/firestore";
+import {collection, onSnapshot, query} from "@firebase/firestore";
 import {db} from "../../utils/firebase";
 
 const Message = ({ message }) => {

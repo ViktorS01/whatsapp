@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 import { onAuthStateChanged } from '@firebase/auth'
 import {auth, db, login, logout} from './utils/firebase'
-import {collection, onSnapshot, query} from "firebase/firestore";
+import {collection, onSnapshot, query} from "@firebase/firestore";
 
 const AuthContext = createContext({})
 
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 					snapshot.docs.map(user => ({
 						...user.data(),
 					}));
-				if (user){
+				if (user && user.uid){
 					setUserAvatar(users.find((item) => item.userID === user.uid).photoURL);
 				}
 			}
