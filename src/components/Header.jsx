@@ -23,9 +23,6 @@ const Header = () => {
 					/>
 				</TouchableOpacity>
 			</View>
-			<View>
-				<AntDesign name='search1' size={30} color='#fff' />
-			</View>
 		</View>
 	)
 }
