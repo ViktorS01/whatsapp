@@ -24,7 +24,7 @@ const styleText = { color: '#fff', textAlign: 'center', marginTop: 6 }
 const Stories = () => {
 	const [stories, setStories] = useState([]);
 	const [visibleStory, setVisibleStory] = useState(false);
-	const [newStories, setNewStories] = useState([]);
+	const [oldStories, setOldStories] = useState(null);
 	const {user} = useAuth()
 	const [currentStories, setCurrentStories] = useState(
 		null
@@ -33,6 +33,12 @@ const Stories = () => {
 	const viewStory = async (id) => {
 		await setCurrentStories(JSON.parse(stories.find(item => item.id === id).stories));
 	}
+
+	useEffect(() => {
+		if (currentStories && currentStories.length > 0){
+			setVisibleStory(true);
+		}
+	}, [currentStories])
 
 	const chooseImage = async () => {
 		let result = await ImagePicker.launchImageLibraryAsync({
@@ -43,8 +49,8 @@ const Stories = () => {
 		});
 
 		if (!result.cancelled) {
-			await addImageToDB(result.uri);
-			await updateStories(newStories);
+			await updateStories([...oldStories, result.uri]);
+			setCurrentStories([...oldStories, result.uri]);
 		}
 	}
 
@@ -56,21 +62,18 @@ const Stories = () => {
 		});
 	}
 
-	const addImageToDB = async (uri) => {
-		let oldStories = []
-		await onSnapshot(
+	useEffect(() => {
+		onSnapshot(
 			query(collection(db, 'users')),
 			snapshot => {
 				const users =
 					snapshot.docs.map(user => ({
 						...user.data(),
 					}));
-				oldStories = JSON.parse(users.find(item => item.userID === user.uid).stories);
-				oldStories.push(uri);
-				setNewStories(oldStories);
+				setOldStories(JSON.parse(users.find(item => item.userID === user.uid).stories));
 			}
 		)
-	}
+	}, [])
 
 	useEffect(() =>
 		onSnapshot(
@@ -125,13 +128,7 @@ const Stories = () => {
 				</TouchableOpacity>
 
 				{stories.map(story => (
-					<TouchableOpacity key={story.name} style={{ marginRight: 25 }} onPress={() => viewStory(story.id).then(() => {
-						if (currentStories && currentStories.length > 0){
-							setVisibleStory(true);
-						} else{
-							setVisibleStory(false);
-						}
-					})}>
+					<TouchableOpacity key={story.name} style={{ marginRight: 25 }} onPress={() => viewStory(story.id)}>
 						<View
 							style={{
 								...styleStory,
