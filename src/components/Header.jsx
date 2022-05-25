@@ -13,7 +13,7 @@ const Header = () => {
 			}}
 		>
 			<View>
-				<TouchableOpacity onPress={() => Linking.openURL('https://google.com')}>
+				<TouchableOpacity>
 					<Image
 						source={require('../images/white-whatsapp.png')}
 						style={{
